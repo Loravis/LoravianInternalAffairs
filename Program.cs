@@ -4,6 +4,7 @@ using dotenv.net;
 using Discord;
 using Discord.WebSocket;
 using Newtonsoft.Json;
+using Discord.Net;
 
 namespace LoravianInternalAffairs
 {
@@ -19,20 +20,41 @@ namespace LoravianInternalAffairs
 
             client = new DiscordSocketClient();
             client.Log += Log;
+            client.Ready += ClientReady;
             var token = loginData.DiscordBotToken;
             await client.LoginAsync(TokenType.Bot, token);
             await client.StartAsync();
             await Task.Delay(-1);
         }
+
         private Task Log(LogMessage msg)
         {
             Console.WriteLine(msg.ToString());
             return Task.CompletedTask;
         }
-    }
 
-    class LoginData
-    {
-        public string DiscordBotToken { get; set; }
+        public async Task ClientReady()
+        {
+            if (File.Exists("./commands.txt") == false)
+            {
+                await Task.Run(() => File.Create("./commands.txt"));
+            }
+        }
+
+        public async Task CreateNewSlashCommand(string name, string desc)
+        {
+            var globalCommand = new SlashCommandBuilder();
+            globalCommand.WithName("hello");
+            globalCommand.WithDescription("Make the bot say hello!");
+
+            try
+            {
+                Console.WriteLine("Creating command....");
+                await client.CreateGlobalApplicationCommandAsync(globalCommand.Build());
+            } catch (HttpException ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
     }
 }
