@@ -21,6 +21,7 @@ namespace LoravianInternalAffairs
             client = new DiscordSocketClient();
             client.Log += Log;
             client.Ready += ClientReady;
+            client.SlashCommandExecuted += SlashCommandHandler;
             var token = loginData.DiscordBotToken;
             await client.LoginAsync(TokenType.Bot, token);
             await client.StartAsync();
@@ -33,23 +34,22 @@ namespace LoravianInternalAffairs
             return Task.CompletedTask;
         }
 
-        public async Task ClientReady()
+        private async Task SlashCommandHandler(SocketSlashCommand command)
         {
-            if (File.Exists("./commands.txt") == false)
+            if (command.Data.Name == "hello")
             {
-                await Task.Run(() => File.Create("./commands.txt"));
+                await command.RespondAsync("Hello " + command.User.GlobalName + "!");
             }
         }
 
-        public async Task CreateNewSlashCommand(string name, string desc)
+        public async Task ClientReady()
         {
             var globalCommand = new SlashCommandBuilder();
             globalCommand.WithName("hello");
-            globalCommand.WithDescription("Make the bot say hello!");
+            globalCommand.WithDescription("Make the bot greet you");
 
             try
             {
-                Console.WriteLine("Creating command....");
                 await client.CreateGlobalApplicationCommandAsync(globalCommand.Build());
             } catch (HttpException ex)
             {
