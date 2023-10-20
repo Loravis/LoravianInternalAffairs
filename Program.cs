@@ -5,6 +5,7 @@ using Discord;
 using Discord.WebSocket;
 using Newtonsoft.Json;
 using Discord.Net;
+using Discord.Commands;
 
 namespace LoravianInternalAffairs
 {
@@ -36,17 +37,24 @@ namespace LoravianInternalAffairs
 
         private async Task SlashCommandHandler(SocketSlashCommand command)
         {
-            if (command.Data.Name == "hello")
+            switch (command.Data.Name)
             {
-                await command.RespondAsync("Hello " + command.User.GlobalName + "!");
+                case "hello":
+                   await command.RespondAsync("Hello " + command.User.GlobalName + "!");
+                   break;
+                case "string":
+                    await command.RespondAsync(command.Data.Options.First().Value.ToString());
+                    break;
             }
+
         }
 
         public async Task ClientReady()
         {
             var globalCommand = new SlashCommandBuilder();
-            globalCommand.WithName("hello");
-            globalCommand.WithDescription("Make the bot greet you");
+            globalCommand.WithName("string");
+            globalCommand.WithDescription("Make the bot return a string");
+            globalCommand.AddOption("user", ApplicationCommandOptionType.String, "The string you want to return!", isRequired: true);
 
             try
             {
