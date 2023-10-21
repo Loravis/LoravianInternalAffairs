@@ -4,6 +4,7 @@ using MySqlX.XDevAPI;
 using System.Net;
 using CrypticWizard.RandomWordGenerator;
 using static CrypticWizard.RandomWordGenerator.WordGenerator;
+using Discord.Commands;
 
 namespace LoravianInternalAffairs.Commands
 {
@@ -26,11 +27,19 @@ namespace LoravianInternalAffairs.Commands
             }
         }
 
-        public static string InitiateVerification()
+        public static EmbedBuilder InitiateVerification()
         {
             WordGenerator myWordGenerator = new WordGenerator();
-            string word = myWordGenerator.GetWord(PartOfSpeech.noun) + " " + myWordGenerator.GetWord(PartOfSpeech.noun) + " " + myWordGenerator.GetWord(PartOfSpeech.noun) + " " + myWordGenerator.GetWord(PartOfSpeech.noun) + " " + myWordGenerator.GetWord(PartOfSpeech.noun) + " ";
-            return word;
+            string phrase = myWordGenerator.GetWord(PartOfSpeech.noun) + " " + myWordGenerator.GetWord(PartOfSpeech.noun) + " " + myWordGenerator.GetWord(PartOfSpeech.noun) + " " + myWordGenerator.GetWord(PartOfSpeech.noun) + " " + myWordGenerator.GetWord(PartOfSpeech.noun) + " ";
+
+            var embed = new EmbedBuilder()
+            {
+                Title = "Verification process started!",
+                Description = "Please enter the phrase below into your Roblox profile description. \n \n" + "**" + phrase + "**" + "\n \nPress the \"Done\" button once you're finished.",
+                Color = new Color(Color.Blue)
+            };
+
+            return embed;
         }
     }
 }
