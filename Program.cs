@@ -1,11 +1,11 @@
 using System;
 using RobloxNET;
-using dotenv.net;
 using Discord;
 using Discord.WebSocket;
 using Newtonsoft.Json;
 using Discord.Net;
 using Discord.Commands;
+using RobloxNET.Exceptions;
 
 namespace LoravianInternalAffairs
 {
@@ -14,10 +14,11 @@ namespace LoravianInternalAffairs
         public static Task Main(string[] args) => new Program().MainAsync();
 
         private DiscordSocketClient client;
+        private LoginData loginData;
         public async Task MainAsync()
         {
             string loginDataJSON = File.ReadAllText("./appsettings.env.json");
-            LoginData loginData = JsonConvert.DeserializeObject<LoginData>(loginDataJSON); 
+            loginData = JsonConvert.DeserializeObject<LoginData>(loginDataJSON); 
 
             client = new DiscordSocketClient();
             client.Log += Log;
@@ -39,11 +40,25 @@ namespace LoravianInternalAffairs
         {
             switch (command.Data.Name)
             {
-                case "hello":
-                   await command.RespondAsync("Hello " + command.User.GlobalName + "!");
-                   break;
-                case "string":
-                    await command.RespondAsync(command.Data.Options.First().Value.ToString());
+                case "verify":
+                    try
+                    {
+                        var id = await Roblox.GetIdFromUsername(command.Data.Options.First().Value.ToString());
+                        var response = await Commands.Verification.CheckIfVerified(id.ToString(), "", loginData.MySqlPassword);
+
+                        if (response == true)
+                        {
+                            await command.RespondAsync("You are already verified!");
+                        } else
+                        {
+                            await command.RespondAsync(Commands.Verification.InitiateVerification());
+                        }
+                    } catch (InvalidUsernameException)
+                    {
+                        await command.RespondAsync("The provided username is invalid!");
+                    }
+
+                    
                     break;
             }
 
@@ -52,9 +67,9 @@ namespace LoravianInternalAffairs
         public async Task ClientReady()
         {
             var globalCommand = new SlashCommandBuilder();
-            globalCommand.WithName("string");
-            globalCommand.WithDescription("Make the bot return a string");
-            globalCommand.AddOption("user", ApplicationCommandOptionType.String, "The string you want to return!", isRequired: true);
+            globalCommand.WithName("verify");
+            globalCommand.WithDescription("Verify your Roblox account");
+            globalCommand.AddOption("username", ApplicationCommandOptionType.String, "Your Roblox username", isRequired: true);
 
             try
             {
@@ -69,5 +84,6 @@ namespace LoravianInternalAffairs
     public class LoginData
     {
         public string DiscordBotToken { get; set; }
+        public string MySqlPassword { get; set; }
     }
 }
