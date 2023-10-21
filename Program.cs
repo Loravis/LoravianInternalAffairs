@@ -5,7 +5,6 @@ using Discord.WebSocket;
 using Newtonsoft.Json;
 using Discord.Net;
 using Discord.Commands;
-using RobloxNET.Exceptions;
 
 namespace LoravianInternalAffairs
 {
@@ -72,5 +71,6 @@ namespace LoravianInternalAffairs
     {
         public string DiscordBotToken { get; set; }
         public string MySqlPassword { get; set; }
+        public string ROBLOSECURITY { get; set; }
     }
 }
