@@ -5,11 +5,37 @@ using System.Net;
 using CrypticWizard.RandomWordGenerator;
 using static CrypticWizard.RandomWordGenerator.WordGenerator;
 using Discord.Commands;
+using Discord.WebSocket;
+using RobloxNET.Exceptions;
+using RobloxNET;
 
 namespace LoravianInternalAffairs.Commands
 {
     public static class Verification
     {
+        public static async Task VerificationHandler(SocketSlashCommand command, LoginData loginData)
+        {
+            try
+            {
+                var id = await Roblox.GetIdFromUsername(command.Data.Options.First().Value.ToString());
+                var response = await Commands.Verification.CheckIfVerified(id.ToString(), "", loginData.MySqlPassword);
+
+                if (response == true)
+                {
+                    await command.RespondAsync("You are already verified!");
+                }
+                else
+                {
+                    var builder = new ComponentBuilder().WithButton("Done", "verification_phrase_done", ButtonStyle.Success);
+                    await command.RespondAsync(embed: Commands.Verification.InitiateVerification().Build(), components: builder.Build());
+                }
+            }
+            catch (InvalidUsernameException)
+            {
+                await command.RespondAsync("The provided username is invalid!");
+            }
+        }
+
         public static async Task<bool> CheckIfVerified(string robloxId, string discordUserId, string mysqlPassword)
         {
             string cs = @"server=localhost;userid=Loraviis;password=" + mysqlPassword + ";database=playerdata";
