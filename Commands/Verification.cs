@@ -6,8 +6,9 @@ using CrypticWizard.RandomWordGenerator;
 using static CrypticWizard.RandomWordGenerator.WordGenerator;
 using Discord.Commands;
 using Discord.WebSocket;
-using RobloxNET.Exceptions;
-using RobloxNET;
+using Robloxdotnet.Exceptions;
+using Robloxdotnet;
+using System.Text.RegularExpressions;
 
 namespace LoravianInternalAffairs.Commands
 {
@@ -15,6 +16,8 @@ namespace LoravianInternalAffairs.Commands
     {
         static SocketSlashCommand cmdGlobal;
         static DiscordSocketClient clientGlobal;
+        static int robloxIdGlobal;
+        static string verificationPhrase;
         public static async Task VerificationHandler(DiscordSocketClient client, SocketSlashCommand command, LoginData loginData)
         {
             cmdGlobal = command;
@@ -45,6 +48,7 @@ namespace LoravianInternalAffairs.Commands
 
         public static async Task<bool> CheckIfVerified(string robloxId, string discordUserId, string mysqlPassword)
         {
+            robloxIdGlobal = Int32.Parse(robloxId);
             string cs = @"server=localhost;userid=Loraviis;password=" + mysqlPassword + ";database=playerdata";
             using var con = new MySqlConnection(cs);
             con.Open();
@@ -63,12 +67,12 @@ namespace LoravianInternalAffairs.Commands
         public static EmbedBuilder InitiateVerification()
         {
             WordGenerator myWordGenerator = new WordGenerator();
-            string phrase = myWordGenerator.GetWord(PartOfSpeech.noun) + " " + myWordGenerator.GetWord(PartOfSpeech.noun) + " " + myWordGenerator.GetWord(PartOfSpeech.noun) + " " + myWordGenerator.GetWord(PartOfSpeech.noun) + " " + myWordGenerator.GetWord(PartOfSpeech.noun) + " ";
+            verificationPhrase = myWordGenerator.GetWord(PartOfSpeech.noun) + " " + myWordGenerator.GetWord(PartOfSpeech.noun) + " " + myWordGenerator.GetWord(PartOfSpeech.noun) + " " + myWordGenerator.GetWord(PartOfSpeech.noun) + " " + myWordGenerator.GetWord(PartOfSpeech.noun) + " ";
 
             var embed = new EmbedBuilder()
             {
-                Title = "Verification process started!",
-                Description = "Please enter the phrase below into your Roblox profile description. \n \n" + "**" + phrase + "**" + "\n \nPress the \"Done\" button once you're finished.",
+                Title = "Verification process started",
+                Description = "Please enter the phrase below into your Roblox profile description. \n \n" + "**" + verificationPhrase + "**" + "\n \nPress the \"Done\" button once you're finished.",
                 Color = new Color(Color.Blue)
             };
 
@@ -80,15 +84,50 @@ namespace LoravianInternalAffairs.Commands
             switch (component.Data.CustomId)
             {
                 case "verification_phrase_done":
-                    MessageProperties messageProperties = new MessageProperties()
+                    string description = await Robloxdotnet.Roblox.GetUserDescription(robloxIdGlobal);
+
+                    if (GetAlphabeticalLetters(description).Contains(GetAlphabeticalLetters(verificationPhrase)))
                     {
-                        Content = "Erm..... There's nothing here yet!! Check back later~ >.<",
-                        Embed = null,
-                        Components = null
-                    };
-                    await cmdGlobal.ModifyOriginalResponseAsync(x => { x.Content = "Erm..... There's nothing here yet!! Check back later~ >.<"; x.Embed = null; x.Components = null; });
+                        await cmdGlobal.ModifyOriginalResponseAsync(x => {
+                            x.Content = "Success!";
+                            x.Embed = null;
+                            x.Components = null;
+                        });
+                    } else
+                    {
+                        var embed = new EmbedBuilder()
+                        {
+                            Title = "Verification failed",
+                            Description = "The verification phrase could not be found in the user's description! \n\n" +
+                            "Ensure you enter the __correct__ username and paste the verification phrase into your Roblox profile description before continuing!",
+                            Color = new Color(Color.Red)
+                        };
+
+                        await cmdGlobal.ModifyOriginalResponseAsync(x => { 
+                            x.Content = String.Empty; 
+                            x.Embed = embed.Build(); 
+                            x.Components = null; 
+                        });
+
+                    }
+
                     break;
             }
+        }
+
+        public static string GetAlphabeticalLetters(string input)
+        {
+            string result = "";
+
+            foreach (char character in input)
+            {
+                if (char.IsLetter(character))
+                {
+                    result += character;
+                }
+            }
+
+            return result;
         }
     }
 }

@@ -1,5 +1,5 @@
 using System;
-using RobloxNET;
+using Robloxdotnet;
 using Discord;
 using Discord.WebSocket;
 using Newtonsoft.Json;
