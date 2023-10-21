@@ -18,6 +18,7 @@ namespace LoravianInternalAffairs.Commands
         static DiscordSocketClient clientGlobal;
         static int robloxIdGlobal;
         static string verificationPhrase;
+        static string mysqlPasswordGlobal;
         public static async Task VerificationHandler(DiscordSocketClient client, SocketSlashCommand command, LoginData loginData)
         {
             cmdGlobal = command;
@@ -48,6 +49,7 @@ namespace LoravianInternalAffairs.Commands
 
         public static async Task<bool> CheckIfVerified(string robloxId, string discordUserId, string mysqlPassword)
         {
+            mysqlPasswordGlobal = mysqlPassword;
             robloxIdGlobal = Int32.Parse(robloxId);
             string cs = @"server=localhost;userid=Loraviis;password=" + mysqlPassword + ";database=playerdata";
             using var con = new MySqlConnection(cs);
@@ -55,6 +57,7 @@ namespace LoravianInternalAffairs.Commands
 
             var cmd = new MySqlCommand("SELECT *\r\nFROM verifications\r\nWHERE robloxid LIKE '%" + robloxId + "%';\r\n", con);
             var result = await cmd.ExecuteScalarAsync();
+            con.Close();
             if (result == null)
             {
                 return false;  
@@ -62,6 +65,7 @@ namespace LoravianInternalAffairs.Commands
             {
                 return true;
             }
+            
         }
 
         public static EmbedBuilder InitiateVerification()
@@ -88,11 +92,38 @@ namespace LoravianInternalAffairs.Commands
 
                     if (GetAlphabeticalLetters(description).Contains(GetAlphabeticalLetters(verificationPhrase)))
                     {
-                        await cmdGlobal.ModifyOriginalResponseAsync(x => {
-                            x.Content = "Success!";
-                            x.Embed = null;
-                            x.Components = null;
-                        });
+                        try
+                        {
+                            string cs = @"server=localhost;userid=Loraviis;password=" + mysqlPasswordGlobal + ";database=playerdata";
+                            using var con = new MySqlConnection(cs);
+                            con.Open();
+                            var verificationCmd = new MySqlCommand("INSERT INTO verifications (robloxid, discordid) VALUES ('" + robloxIdGlobal.ToString() + "', '" + cmdGlobal.User.Id.ToString() + "');\r\n");
+                            verificationCmd.Connection = con;
+                            await verificationCmd.ExecuteNonQueryAsync();
+
+                            var embed = new EmbedBuilder()
+                                {
+                                    Title = "Verification success",
+                                    Description = "You've successfully verified! You may now use **/getroles** to get your group roles! \n\n" +
+                                    "If you wish to verify with a different account, use the **/reverify** command.",
+                                    Color = new Color(Color.Green)
+                                };
+
+                            await cmdGlobal.ModifyOriginalResponseAsync(x => {
+                                x.Content = String.Empty;
+                                x.Embed = embed.Build();
+                                x.Components = null;
+                            });
+                        } catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                            await cmdGlobal.ModifyOriginalResponseAsync(x => {
+                                x.Content = "There was an error completing the verification. Please try again and contact @loravis if this error persists.";
+                                x.Embed = null;
+                                x.Components = null;
+                            });
+                        }
+                        
                     } else
                     {
                         var embed = new EmbedBuilder()
