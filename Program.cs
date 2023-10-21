@@ -25,7 +25,6 @@ namespace LoravianInternalAffairs
             client.Log += Log;
             client.Ready += ClientReady;
             client.SlashCommandExecuted += SlashCommandHandler;
-            client.ButtonExecuted += ButtonHandler;
             var token = loginData.DiscordBotToken;
             await client.LoginAsync(TokenType.Bot, token);
             await client.StartAsync();
@@ -45,7 +44,7 @@ namespace LoravianInternalAffairs
             switch (command.Data.Name)
             {
                 case "verify":
-                    await Commands.Verification.VerificationHandler(command, loginData);
+                    await Commands.Verification.VerificationHandler(client, command, loginData);
                     break;
             }
 
@@ -67,21 +66,6 @@ namespace LoravianInternalAffairs
             }
         }
 
-        public async Task ButtonHandler(SocketMessageComponent component)
-        {
-            switch (component.Data.CustomId)
-            {
-                case "verification_phrase_done":
-                    MessageProperties messageProperties = new MessageProperties()
-                    {
-                        Content = "Erm..... There's nothing here yet!! Check back later~ >.<",
-                        Embed = null,
-                        Components = null
-                    };
-                    await cmdGlobal.ModifyOriginalResponseAsync(x => { x.Content = "Erm..... There's nothing here yet!! Check back later~ >.<"; x.Embed = null; x.Components = null; }) ;
-                    break;
-            }
-        }
     }
 
     public class LoginData

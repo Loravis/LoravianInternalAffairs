@@ -13,8 +13,15 @@ namespace LoravianInternalAffairs.Commands
 {
     public static class Verification
     {
-        public static async Task VerificationHandler(SocketSlashCommand command, LoginData loginData)
+        static SocketSlashCommand cmdGlobal;
+        static DiscordSocketClient clientGlobal;
+        public static async Task VerificationHandler(DiscordSocketClient client, SocketSlashCommand command, LoginData loginData)
         {
+            cmdGlobal = command;
+            clientGlobal = client;
+
+            clientGlobal.ButtonExecuted += ButtonHandler;
+            
             try
             {
                 var id = await Roblox.GetIdFromUsername(command.Data.Options.First().Value.ToString());
@@ -66,6 +73,22 @@ namespace LoravianInternalAffairs.Commands
             };
 
             return embed;
+        }
+
+        public static async Task ButtonHandler(SocketMessageComponent component)
+        {
+            switch (component.Data.CustomId)
+            {
+                case "verification_phrase_done":
+                    MessageProperties messageProperties = new MessageProperties()
+                    {
+                        Content = "Erm..... There's nothing here yet!! Check back later~ >.<",
+                        Embed = null,
+                        Components = null
+                    };
+                    await cmdGlobal.ModifyOriginalResponseAsync(x => { x.Content = "Erm..... There's nothing here yet!! Check back later~ >.<"; x.Embed = null; x.Components = null; });
+                    break;
+            }
         }
     }
 }
