@@ -45,23 +45,34 @@ namespace LoravianInternalAffairs
                 case "verify":
                     await Commands.Verification.VerificationHandler(client, command, loginData);
                     break;
+                case "getroles":
+                    await Commands.Getroles.UpdateUserRoles(client, command, loginData);
+                    break;
             }
 
         }
 
         public async Task ClientReady()
         {
-            var globalCommand = new SlashCommandBuilder();
-            globalCommand.WithName("verify");
-            globalCommand.WithDescription("Verify your Roblox account");
-            globalCommand.AddOption("username", ApplicationCommandOptionType.String, "Your Roblox username", isRequired: true);
-
+            List<ApplicationCommandProperties> applicationCommandProperties = new();
             try
             {
-                await client.CreateGlobalApplicationCommandAsync(globalCommand.Build());
-            } catch (HttpException ex)
+                var verifyCommand = new SlashCommandBuilder();
+                verifyCommand.WithName("verify");
+                verifyCommand.WithDescription("Verify your Roblox account");
+                verifyCommand.AddOption("username", ApplicationCommandOptionType.String, "Your Roblox username", isRequired: true);
+                applicationCommandProperties.Add(verifyCommand.Build());
+
+                var getrolesCommand = new SlashCommandBuilder();
+                getrolesCommand.WithName("getroles");
+                getrolesCommand.WithDescription("Get your roles.");
+                applicationCommandProperties.Add(getrolesCommand.Build());
+
+                await client.BulkOverwriteGlobalApplicationCommandsAsync(applicationCommandProperties.ToArray());
+                
+            } catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                Console.WriteLine(ex.Message.ToString());
             }
         }
 

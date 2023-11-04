@@ -30,16 +30,9 @@ namespace LoravianInternalAffairs.Commands
             {
                 var id = await Roblox.GetIdFromUsername(command.Data.Options.First().Value.ToString());
                 var response = await Commands.Verification.CheckIfVerified(id.ToString(), "", loginData.MySqlPassword);
-
-                if (response == true)
-                {
-                    await command.RespondAsync("You are already verified!");
-                }
-                else
-                {
-                    var builder = new ComponentBuilder().WithButton("Done", "verification_phrase_done", ButtonStyle.Success);
-                    await command.RespondAsync(embed: Commands.Verification.InitiateVerification().Build(), components: builder.Build());
-                }
+                
+                var builder = new ComponentBuilder().WithButton("Done", "verification_phrase_done", ButtonStyle.Success);
+                await command.RespondAsync(embed: Commands.Verification.InitiateVerification().Build(), components: builder.Build());
             }
             catch (InvalidUsernameException)
             {
