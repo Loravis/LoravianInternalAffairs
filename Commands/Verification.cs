@@ -29,7 +29,6 @@ namespace LoravianInternalAffairs.Commands
             try
             {
                 var id = await Roblox.GetIdFromUsername(command.Data.Options.First().Value.ToString());
-                var response = await Commands.Verification.CheckIfVerified(id.ToString(), "", loginData.MySqlPassword);
                 
                 var builder = new ComponentBuilder().WithButton("Done", "verification_phrase_done", ButtonStyle.Success);
                 await command.RespondAsync(embed: Commands.Verification.InitiateVerification().Build(), components: builder.Build());
@@ -38,27 +37,6 @@ namespace LoravianInternalAffairs.Commands
             {
                 await command.RespondAsync("The provided username is invalid!");
             }
-        }
-
-        public static async Task<bool> CheckIfVerified(string robloxId, string discordUserId, string mysqlPassword)
-        {
-            mysqlPasswordGlobal = mysqlPassword;
-            robloxIdGlobal = Int32.Parse(robloxId);
-            string cs = @"server=localhost;userid=Loraviis;password=" + mysqlPassword + ";database=playerdata";
-            using var con = new MySqlConnection(cs);
-            con.Open();
-
-            var cmd = new MySqlCommand("SELECT *\r\nFROM verifications\r\nWHERE robloxid LIKE '%" + robloxId + "%';\r\n", con);
-            var result = await cmd.ExecuteScalarAsync();
-            con.Close();
-            if (result == null)
-            {
-                return false;  
-            } else
-            {
-                return true;
-            }
-            
         }
 
         public static EmbedBuilder InitiateVerification()
@@ -98,7 +76,7 @@ namespace LoravianInternalAffairs.Commands
                                 {
                                     Title = "Verification success",
                                     Description = "You've successfully verified! You may now use **/getroles** to get your group roles! \n\n" +
-                                    "If you wish to verify with a different account, use the **/reverify** command.",
+                                    "If you wish to verify with a different account, verify again using **/verify**.",
                                     Color = new Color(Color.Green)
                                 };
 
