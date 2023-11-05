@@ -49,7 +49,7 @@ namespace LoravianInternalAffairs
                     await Commands.Getroles.UpdateUserRoles(client, command, loginData);
                     break;
                 case "bind":
-                    Console.WriteLine(command.Data.Options.First().Name.ToString());
+                    await Commands.Bind.ManageRoleBinds(client, command, loginData);
                     break;
             }
 
@@ -74,6 +74,7 @@ namespace LoravianInternalAffairs
                 var bindCommand = new SlashCommandBuilder();
                 bindCommand.WithName("bind");
                 bindCommand.WithDescription("Bind a role to a group or group rank (ADMIN ONLY).");
+                bindCommand.WithDefaultMemberPermissions(GuildPermission.Administrator);
                 var bindOption = new SlashCommandOptionBuilder()
                     .WithName("add")
                     .WithType(ApplicationCommandOptionType.SubCommand)
