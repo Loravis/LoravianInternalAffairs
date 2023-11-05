@@ -76,7 +76,13 @@ namespace LoravianInternalAffairs.Commands
                 }
                 await addBindToTable.ExecuteScalarAsync();
 
-                await command.RespondAsync("Erm.... There's nothing here yet!! Check back later~ >.<");
+                var embedBuilder = new EmbedBuilder()
+                {
+                    Title = "Bind added successfully!",
+                    Description = "The bind has successfully been created!",
+                    Color = new Color(Color.Green)
+                };
+                await command.RespondAsync(embed: embedBuilder.Build());
             } else
             {
                 await result.CloseAsync();
