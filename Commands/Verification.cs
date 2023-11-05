@@ -69,11 +69,11 @@ namespace LoravianInternalAffairs.Commands
                             using var con = new MySqlConnection(cs);
                             con.Open();
 
-                            var checkIfVerified = new MySqlCommand("SELECT *\r\nFROM verifications\r\nWHERE robloxid LIKE '%" + robloxIdGlobal + "%';\r\n", con);
+                            var checkIfVerified = new MySqlCommand("SELECT *\r\nFROM verifications\r\nWHERE discordid LIKE '%" + component.User.Id.ToString() + "%';\r\n", con);
                             var result = await checkIfVerified.ExecuteScalarAsync();
                             if (result != null)
                             {
-                                checkIfVerified = new MySqlCommand("DELETE FROM verifications WHERE robloxid = " + robloxIdGlobal + ";", con);
+                                checkIfVerified = new MySqlCommand("DELETE FROM verifications WHERE discordid = " + component.User.Id.ToString() + ";", con);
                                 await checkIfVerified.ExecuteScalarAsync();
                             }
 
