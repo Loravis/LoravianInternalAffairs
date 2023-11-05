@@ -37,7 +37,11 @@ namespace LoravianInternalAffairs.Commands
 
                 try
                 {
-                    await user.ModifyAsync(properties => properties.Nickname = "NewNickname");
+                    cmd = new MySqlCommand("SELECT robloxid FROM verifications WHERE discordid = " + discordUserId + ";", con);
+                    var robloxuserresult = await cmd.ExecuteScalarAsync();
+
+                    string robloxNickname = await Roblox.GetUsernameFromId(Convert.ToInt32(robloxuserresult));
+                    await user.ModifyAsync(properties => properties.Nickname = robloxNickname);
 
                     var embedBuilder = new EmbedBuilder()
                     {
@@ -49,16 +53,19 @@ namespace LoravianInternalAffairs.Commands
 
                 } catch (Exception ex)
                 {
+
+                    Console.WriteLine(ex);
                     var embedBuilder = new EmbedBuilder()
                     {
-                        Title = "Updating failed!",
-                        Description = "I do not have permission to update the user!",
-                        Color = new Color(Color.Red)
+                       Title = "Updating failed!",
+                       Description = "I do not have permission to update the user!",
+                       Color = new Color(Color.Red)
                     };
                     await command.RespondAsync(embed: embedBuilder.Build());
                 }
                 
             }
+            con.Close();
         }
     }
 }
