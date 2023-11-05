@@ -82,7 +82,7 @@ namespace LoravianInternalAffairs.Commands
                     Description = "The bind has successfully been created!",
                     Color = new Color(Color.Green)
                 };
-                await command.RespondAsync(embed: embedBuilder.Build());
+                await command.RespondAsync(embed: embedBuilder.Build(), ephemeral: true);
             } else
             {
                 await result.CloseAsync();
@@ -93,7 +93,7 @@ namespace LoravianInternalAffairs.Commands
                     Description = "The role bind already exists!",
                     Color = new Color(Color.Red)
                 };
-                await command.RespondAsync(embed: embedBuilder.Build());
+                await command.RespondAsync(embed: embedBuilder.Build(), ephemeral: true);
             }
             
             con.Close();
@@ -155,7 +155,7 @@ namespace LoravianInternalAffairs.Commands
                     Description = "The bind has successfully been deleted!",
                     Color = new Color(Color.Green)
                 };
-                await command.RespondAsync(embed: embedBuilder.Build());
+                await command.RespondAsync(embed: embedBuilder.Build(), ephemeral: true);
 
             } catch (Exception)
             {
@@ -165,7 +165,7 @@ namespace LoravianInternalAffairs.Commands
                     Description = "The requested bind does not exist.",
                     Color = new Color(Color.Red)
                 };
-                await command.RespondAsync(embed: embedBuilder.Build());
+                await command.RespondAsync(embed: embedBuilder.Build(), ephemeral: true);
             }
         }
     }

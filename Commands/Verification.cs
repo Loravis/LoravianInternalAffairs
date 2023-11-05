@@ -23,19 +23,20 @@ namespace LoravianInternalAffairs.Commands
         {
             cmdGlobal = command;
             clientGlobal = client;
+            mysqlPasswordGlobal = loginData.MySqlPassword;
 
             clientGlobal.ButtonExecuted += ButtonHandler;
             
             try
             {
                 var id = await Roblox.GetIdFromUsername(command.Data.Options.First().Value.ToString());
-                
+                robloxIdGlobal = id;
                 var builder = new ComponentBuilder().WithButton("Done", "verification_phrase_done", ButtonStyle.Success);
-                await command.RespondAsync(embed: Commands.Verification.InitiateVerification().Build(), components: builder.Build());
+                await command.RespondAsync(embed: Commands.Verification.InitiateVerification().Build(), components: builder.Build(), ephemeral: true);
             }
             catch (InvalidUsernameException)
             {
-                await command.RespondAsync("The provided username is invalid!");
+                await command.RespondAsync("The provided username is invalid!", ephemeral: true);
             }
         }
 
