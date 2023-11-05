@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using MySql.Data.MySqlClient;
 using MySqlX.XDevAPI;
 using Robloxdotnet;
+using Robloxdotnet.Utilities.Groups;
 using System.Data;
 
 namespace LoravianInternalAffairs.Commands
@@ -73,10 +74,44 @@ namespace LoravianInternalAffairs.Commands
                             }
                         }
                     }
-
-                    foreach (var row in data)
+                    UserGroupInfo userGroupInfo = await Robloxdotnet.Utilities.Groups.MemberManagement.GetUserGroupRoles(Convert.ToUInt64(robloxuserresult));
+                    for (int i = 0; i < data.GetLength(0); i++ )
                     {
-                        Console.WriteLine(row);
+                        if (user.Roles.Contains(server.GetRole(Convert.ToUInt64(data[i, 0]))) == false)
+                        {
+                            bool inGroup = false;
+                            foreach(var groupData in userGroupInfo.data)
+                            {
+                                if (groupData.group.id == Convert.ToUInt64(data[i, 1]))
+                                {
+                                    inGroup = true;
+                                    break;
+                                }
+                            }
+
+                            if (inGroup)
+                            {
+                                if (int.TryParse(data[i, 2], out _))
+                                {
+                                    foreach (var groupData in userGroupInfo.data)
+                                    {
+                                        if (groupData.role.rank == Convert.ToUInt64(data[i, 2]) && groupData.group.id == Convert.ToUInt64(data[i, 1]))
+                                        {
+                                            await user.AddRoleAsync(server.GetRole(Convert.ToUInt64(data[i, 0])));
+                                        }
+                                    }
+                                } else
+                                {
+                                    //TODO
+                                }
+                            }
+                        }
+
+                        for (int j = 0;j < data.GetLength(1); j++ )
+                        {
+                            //TODO
+                            //Console.WriteLine(data[i, j]);
+                        }    
                     }
 
                     var embedBuilder = new EmbedBuilder()
@@ -103,5 +138,6 @@ namespace LoravianInternalAffairs.Commands
             }
             con.Close();
         }
+
     }
 }
