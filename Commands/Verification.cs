@@ -68,6 +68,15 @@ namespace LoravianInternalAffairs.Commands
                             string cs = @"server=localhost;userid=Loraviis;password=" + mysqlPasswordGlobal + ";database=playerdata";
                             using var con = new MySqlConnection(cs);
                             con.Open();
+
+                            var checkIfVerified = new MySqlCommand("SELECT *\r\nFROM verifications\r\nWHERE robloxid LIKE '%" + robloxIdGlobal + "%';\r\n", con);
+                            var result = await checkIfVerified.ExecuteScalarAsync();
+                            if (result != null)
+                            {
+                                checkIfVerified = new MySqlCommand("DELETE FROM verifications WHERE robloxid = " + robloxIdGlobal + ";", con);
+                                await checkIfVerified.ExecuteScalarAsync();
+                            }
+
                             var verificationCmd = new MySqlCommand("INSERT INTO verifications (robloxid, discordid) VALUES ('" + robloxIdGlobal.ToString() + "', '" + cmdGlobal.User.Id.ToString() + "');\r\n");
                             verificationCmd.Connection = con;
                             await verificationCmd.ExecuteNonQueryAsync();
