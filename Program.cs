@@ -48,6 +48,9 @@ namespace LoravianInternalAffairs
                 case "getroles":
                     await Commands.Getroles.UpdateUserRoles(client, command, loginData);
                     break;
+                case "bind":
+                    Console.WriteLine(command.Data.Options.First().Name.ToString());
+                    break;
             }
 
         }
@@ -68,11 +71,34 @@ namespace LoravianInternalAffairs
                 getrolesCommand.WithDescription("Get your roles.");
                 applicationCommandProperties.Add(getrolesCommand.Build());
 
+                var bindCommand = new SlashCommandBuilder();
+                bindCommand.WithName("bind");
+                bindCommand.WithDescription("Bind a role to a group or group rank (ADMIN ONLY).");
+                var bindOption = new SlashCommandOptionBuilder()
+                    .WithName("add")
+                    .WithType(ApplicationCommandOptionType.SubCommand)
+                    .WithDescription("Add a new group role bind. (ADMIN ONLY)")
+                    .AddOption("role", ApplicationCommandOptionType.Role, "The role you are looking to bind", isRequired: true)
+                    .AddOption("groupid", ApplicationCommandOptionType.Integer, "The group you are looking to bind the role to", isRequired: true)
+                    .AddOption("rank", ApplicationCommandOptionType.Integer, "The group rank (0-255) you are looking to bind the role to. Empty = bind the entire group.", isRequired: false);
+
+                var unbindOption = new SlashCommandOptionBuilder()
+                    .WithName("remove")
+                    .WithType(ApplicationCommandOptionType.SubCommand)
+                    .WithDescription("Remove an existing role bind. (ADMIN ONLY)")
+                    .AddOption("role", ApplicationCommandOptionType.Role, "The role that you are looking to unbind", isRequired: true)
+                    .AddOption("groupid", ApplicationCommandOptionType.Integer, "The group that the role is bound to", isRequired: true)
+                    .AddOption("rank", ApplicationCommandOptionType.Integer, "The group rank (0-255) that the role is bound to. Empty = bind the entire group.", isRequired: false);
+
+                bindCommand.AddOption(bindOption);
+                bindCommand.AddOption(unbindOption);
+                applicationCommandProperties.Add(bindCommand.Build());
+
                 await client.BulkOverwriteGlobalApplicationCommandsAsync(applicationCommandProperties.ToArray());
                 
             } catch (Exception ex)
             {
-                Console.WriteLine(ex.Message.ToString());
+                Console.WriteLine(ex);
             }
         }
 
