@@ -40,17 +40,24 @@ namespace LoravianInternalAffairs
         {
             cmdGlobal = command;
 
-            switch (command.Data.Name)
+            try
             {
-                case "verify":
-                    await Commands.Verification.VerificationHandler(client, command, loginData);
-                    break;
-                case "getroles":
-                    await Commands.Getroles.UpdateUserRoles(client, command, loginData);
-                    break;
-                case "bind":
-                    await Commands.Bind.ManageRoleBinds(client, command, loginData);
-                    break;
+                switch (command.Data.Name)
+                {
+                    case "verify":
+                        await Commands.Verification.VerificationHandler(client, command, loginData);
+                        break;
+                    case "getroles":
+                        await Commands.Getroles.UpdateUserRoles(client, command, loginData);
+                        break;
+                    case "bind":
+                        await Commands.Bind.ManageRoleBinds(client, command, loginData);
+                        break;
+                }
+            } catch (Discord.Net.HttpException ex)
+            {
+                await command.RespondAsync("An internal error has occured while trying to execute this command! " +
+                    "Please try again and message @loravis  if this error persists.", ephemeral: true);
             }
 
         }

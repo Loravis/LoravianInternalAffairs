@@ -75,43 +75,41 @@ namespace LoravianInternalAffairs.Commands
                         }
                     }
                     UserGroupInfo userGroupInfo = await Robloxdotnet.Utilities.Groups.MemberManagement.GetUserGroupRoles(Convert.ToUInt64(robloxuserresult));
+
+                    List<ulong> addedRolesList = new List<ulong>();
+                    string addedRolesString = "";
+
                     for (int i = 0; i < data.GetLength(0); i++ )
                     {
-                        if (user.Roles.Contains(server.GetRole(Convert.ToUInt64(data[i, 0]))) == false)
+                        if (user.Roles.Contains(server.GetRole(Convert.ToUInt64(data[i, 0]))) == false && addedRolesList.Contains(Convert.ToUInt64(data[i, 0])) == false)
                         {
-                            bool inGroup = false;
-                            foreach(var groupData in userGroupInfo.data)
+                            foreach (Data ugi in userGroupInfo.data) //Data is an object from Robloxdotnet's UserGroupInfo.cs
                             {
-                                if (groupData.group.id == Convert.ToUInt64(data[i, 1]))
+                                if (data[i, 2] != String.Empty)
                                 {
-                                    inGroup = true;
+                                    if (ugi.group.id == Convert.ToUInt64(data[i, 1]) && ugi.role.rank == Convert.ToUInt64(data[i, 2]))
+                                    {
+                                        await user.AddRoleAsync(server.GetRole(Convert.ToUInt64(data[i, 0])));
+                                        addedRolesList.Add(Convert.ToUInt64(data[i, 0]));
+                                        Console.WriteLine("Added!");
+                                        break;
+                                    } 
+                                } else if (ugi.group.id == Convert.ToUInt64(data[i, 1]))
+                                {
+                                    await user.AddRoleAsync(server.GetRole(Convert.ToUInt64(data[i, 0])));
+                                    addedRolesList.Add(Convert.ToUInt64(data[i, 0]));
+                                    Console.WriteLine("Added!");
                                     break;
                                 }
                             }
+                        }   
+                    }
 
-                            if (inGroup)
-                            {
-                                if (int.TryParse(data[i, 2], out _))
-                                {
-                                    foreach (var groupData in userGroupInfo.data)
-                                    {
-                                        if (groupData.role.rank == Convert.ToUInt64(data[i, 2]) && groupData.group.id == Convert.ToUInt64(data[i, 1]))
-                                        {
-                                            await user.AddRoleAsync(server.GetRole(Convert.ToUInt64(data[i, 0])));
-                                        }
-                                    }
-                                } else
-                                {
-                                    //TODO
-                                }
-                            }
-                        }
-
-                        for (int j = 0;j < data.GetLength(1); j++ )
-                        {
-                            //TODO
-                            //Console.WriteLine(data[i, j]);
-                        }    
+                    ulong[] addedRolesArray = addedRolesList.ToArray();
+                        
+                    foreach (ulong addedRole in addedRolesArray)
+                    {
+                        addedRolesString = addedRolesString + "<@&" + addedRole + ">\n";
                     }
 
                     var embedBuilder = new EmbedBuilder()
@@ -120,6 +118,17 @@ namespace LoravianInternalAffairs.Commands
                         Description = "Your roles and nickname have been updated successfully!",
                         Color = new Color(Color.Green)
                     };
+
+                    if (addedRolesString == "")
+                    {
+                        addedRolesString = "No roles were added!";
+                    }
+
+                    embedBuilder.AddField(new EmbedFieldBuilder()
+                    {
+                        Name = "Added roles:",
+                        Value = "\n" + addedRolesString
+                    } );
                     await command.RespondAsync(embed: embedBuilder.Build(), ephemeral: true);
 
                 } catch (Exception ex)
