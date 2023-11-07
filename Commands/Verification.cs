@@ -16,7 +16,7 @@ namespace LoravianInternalAffairs.Commands
     {
         static SocketSlashCommand cmdGlobal;
         static DiscordSocketClient clientGlobal;
-        static int robloxIdGlobal;
+        static ulong robloxIdGlobal;
         static string verificationPhrase;
         static string mysqlPasswordGlobal;
         public static async Task VerificationHandler(DiscordSocketClient client, SocketSlashCommand command, LoginData loginData)
@@ -84,8 +84,8 @@ namespace LoravianInternalAffairs.Commands
 
                             var embed = new EmbedBuilder()
                                 {
-                                    Title = "Verification success",
-                                    Description = "You've successfully verified! You may now use **/getroles** to get your group roles! \n\n" +
+                                    Title = "Verification succeeded!",
+                                    Description = "You've successfully verified! You may now use **/getroles** to get your group roles and update your nickname! \n\n" +
                                     "If you wish to verify with a different account, verify again using **/verify**.",
                                     Color = new Color(Color.Green)
                                 };

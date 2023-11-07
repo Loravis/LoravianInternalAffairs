@@ -5,6 +5,7 @@ using MySqlX.XDevAPI;
 using Robloxdotnet;
 using Robloxdotnet.Utilities.Groups;
 using System.Data;
+using System.Security.Cryptography.Xml;
 
 namespace LoravianInternalAffairs.Commands
 {
@@ -42,7 +43,7 @@ namespace LoravianInternalAffairs.Commands
                     cmd = new MySqlCommand("SELECT robloxid FROM verifications WHERE discordid = " + discordUserId + ";", con);
                     var robloxuserresult = await cmd.ExecuteScalarAsync();
 
-                    string robloxNickname = await Roblox.GetUsernameFromId(Convert.ToInt32(robloxuserresult));
+                    string robloxNickname = await Roblox.GetUsernameFromId(Convert.ToUInt64(robloxuserresult));
                     await user.ModifyAsync(properties => properties.Nickname = robloxNickname);
 
                     //Add roles
@@ -74,10 +75,13 @@ namespace LoravianInternalAffairs.Commands
                             }
                         }
                     }
-                    UserGroupInfo userGroupInfo = await Robloxdotnet.Utilities.Groups.MemberManagement.GetUserGroupRoles(Convert.ToUInt64(robloxuserresult));
+                    UserGroupInfo userGroupInfo = await Robloxdotnet.Utilities.Groups.MemberManagement.GetUserGroupInfo(Convert.ToUInt64(robloxuserresult));
 
                     List<ulong> addedRolesList = new List<ulong>();
+                    List<ulong> noRemoveRoles = new List<ulong>();
+                    List<ulong> removedRolesList = new List<ulong>();
                     string addedRolesString = "";
+                    string removedRolesString = "";
 
                     for (int i = 0; i < data.GetLength(0); i++ )
                     {
@@ -91,25 +95,62 @@ namespace LoravianInternalAffairs.Commands
                                     {
                                         await user.AddRoleAsync(server.GetRole(Convert.ToUInt64(data[i, 0])));
                                         addedRolesList.Add(Convert.ToUInt64(data[i, 0]));
-                                        Console.WriteLine("Added!");
                                         break;
                                     } 
                                 } else if (ugi.group.id == Convert.ToUInt64(data[i, 1]))
                                 {
                                     await user.AddRoleAsync(server.GetRole(Convert.ToUInt64(data[i, 0])));
                                     addedRolesList.Add(Convert.ToUInt64(data[i, 0]));
-                                    Console.WriteLine("Added!");
                                     break;
                                 }
                             }
-                        }   
+                        } else if (user.Roles.Contains(server.GetRole(Convert.ToUInt64(data[i, 0]))) 
+                            && noRemoveRoles.Contains(Convert.ToUInt64(data[i, 0])) == false 
+                            && removedRolesList.Contains(Convert.ToUInt64(data[i, 0])) == false)
+                        {
+
+                            bool remove = true;
+                            foreach (Data ugi in userGroupInfo.data)
+                            {
+                                if (data[i, 2] != String.Empty)
+                                {
+                                    if (ugi.group.id == Convert.ToUInt64(data[i, 1]) && ugi.role.rank == Convert.ToUInt64(data[i, 2]))
+                                    {
+                                        remove = false;
+                                        break;
+                                    }
+                                } else
+                                {
+                                    if (ugi.group.id == Convert.ToUInt64(data[i, 1]))
+                                    {
+                                        remove = false;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (remove)
+                            {
+                                await user.RemoveRoleAsync(server.GetRole(Convert.ToUInt64(data[i, 0])));
+                                removedRolesList.Add(Convert.ToUInt64(data[i, 0]));
+                            } else
+                            {
+                                noRemoveRoles.Add(Convert.ToUInt64(data[i, 0]));
+                            }
+                        }
                     }
 
                     ulong[] addedRolesArray = addedRolesList.ToArray();
-                        
+                    ulong[] removedRolesArray = removedRolesList.ToArray();
+
                     foreach (ulong addedRole in addedRolesArray)
                     {
                         addedRolesString = addedRolesString + "<@&" + addedRole + ">\n";
+                    }
+
+                    foreach (ulong removedRole in removedRolesArray)
+                    {
+                        removedRolesString = removedRolesString + "<@&" + removedRole + ">\n";
                     }
 
                     var embedBuilder = new EmbedBuilder()
@@ -123,12 +164,21 @@ namespace LoravianInternalAffairs.Commands
                     {
                         addedRolesString = "No roles were added!";
                     }
+                    if (removedRolesString == "")
+                    {
+                        removedRolesString = "No roles were removed!";
+                    }
 
                     embedBuilder.AddField(new EmbedFieldBuilder()
                     {
                         Name = "Added roles:",
                         Value = "\n" + addedRolesString
                     } );
+                    embedBuilder.AddField(new EmbedFieldBuilder()
+                    {
+                        Name = "Removed roles:",
+                        Value = "\n" + removedRolesString
+                    });
                     await command.RespondAsync(embed: embedBuilder.Build(), ephemeral: true);
 
                 } catch (Exception ex)
