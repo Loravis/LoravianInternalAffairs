@@ -48,10 +48,13 @@ namespace LoravianInternalAffairs
                         await Commands.Verification.VerificationHandler(client, command, loginData);
                         break;
                     case "getroles":
-                        await Commands.Getroles.UpdateUserRoles(client, command, loginData);
+                        await Commands.Getroles.UpdateUserRoles(client, command, loginData, false);
                         break;
                     case "bind":
                         await Commands.Bind.ManageRoleBinds(client, command, loginData);
+                        break;
+                    case "forceupdate":
+                        await Commands.Getroles.UpdateUserRoles(client, command, loginData, true);
                         break;
                 }
             } catch (Discord.Net.HttpException ex)
@@ -77,6 +80,13 @@ namespace LoravianInternalAffairs
                 getrolesCommand.WithName("getroles");
                 getrolesCommand.WithDescription("Get your roles.");
                 applicationCommandProperties.Add(getrolesCommand.Build());
+
+                var forceupdateCommand = new SlashCommandBuilder();
+                forceupdateCommand.WithName("forceupdate");
+                forceupdateCommand.WithDescription("Forcefully execute /getroles on any user. ");
+                forceupdateCommand.WithDefaultMemberPermissions(GuildPermission.ManageRoles);
+                forceupdateCommand.AddOption("user", ApplicationCommandOptionType.User, "The user you are looking to update", isRequired: true);
+                applicationCommandProperties.Add(forceupdateCommand.Build());
 
                 var bindCommand = new SlashCommandBuilder();
                 bindCommand.WithName("bind");

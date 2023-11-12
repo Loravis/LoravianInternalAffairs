@@ -12,7 +12,7 @@ namespace LoravianInternalAffairs.Commands
 {
     public class Getroles
     {
-        public static async Task UpdateUserRoles(DiscordSocketClient client, SocketSlashCommand command, LoginData loginData)
+        public static async Task UpdateUserRoles(DiscordSocketClient client, SocketSlashCommand command, LoginData loginData, bool force)
         {
             string mysqlPassword = loginData.MySqlPassword;
             string discordUserId = command.User.Id.ToString();
@@ -25,20 +25,50 @@ namespace LoravianInternalAffairs.Commands
 
             if (result == null)
             {
-                var embedBuilder = new EmbedBuilder()
+                EmbedBuilder embedBuilder;
+
+                if (force)
                 {
-                    Title = "Updating failed!",
-                    Description = "You are currently not verified! Please type **/verify** to start!",
-                    Color = new Color(Color.Red)
-                };
+                    embedBuilder = new EmbedBuilder()
+                    {
+                        Title = "Updating failed!",
+                        Description = "The target user is not verified! Please ask them to type **/verify**. ",
+                        Color = new Color(Color.Red)
+                    };
+                } else
+                {
+                    embedBuilder = new EmbedBuilder()
+                    {
+                        Title = "Updating failed!",
+                        Description = "You are currently not verified! Please type **/verify** to start!",
+                        Color = new Color(Color.Red)
+                    };
+                }
+
+                
                 await command.RespondAsync(embed: embedBuilder.Build(), ephemeral: true);
             } else
             {
 
                 ulong guildId = (ulong)command.GuildId;
                 var server = client.GetGuild(guildId);
-                var user = server.GetUser(command.User.Id);
+                SocketGuildUser user = server.GetUser(command.User.Id);
 
+                if (force)
+                {
+                    var commandOptions = command.Data.Options;
+
+                    foreach (var option in commandOptions)
+                    {
+                        if (option.Type == ApplicationCommandOptionType.User)
+                        {
+                            user = (SocketGuildUser)option.Value;
+                            break;
+                        }
+                    }
+
+                } 
+                
                 try
                 {
                     cmd = new MySqlCommand("SELECT robloxid FROM verifications WHERE discordid = " + discordUserId + ";", con);
@@ -157,7 +187,7 @@ namespace LoravianInternalAffairs.Commands
                     var embedBuilder = new EmbedBuilder()
                     {
                         Title = "Updating succeeded!",
-                        Description = "Your roles and nickname have been updated successfully!",
+                        Description = "Roles and nickname have been updated successfully!",
                         Color = new Color(Color.Green)
                     };
 
