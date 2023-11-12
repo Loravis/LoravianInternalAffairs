@@ -4,6 +4,7 @@ using MySql.Data.MySqlClient;
 using MySqlX.XDevAPI;
 using Robloxdotnet;
 using Robloxdotnet.Utilities.Groups;
+using Robloxdotnet.Utilities.Users;
 using System.Data;
 using System.Security.Cryptography.Xml;
 
@@ -87,7 +88,7 @@ namespace LoravianInternalAffairs.Commands
                     {
                         if (user.Roles.Contains(server.GetRole(Convert.ToUInt64(data[i, 0]))) == false && addedRolesList.Contains(Convert.ToUInt64(data[i, 0])) == false)
                         {
-                            foreach (Data ugi in userGroupInfo.data) //Data is an object from Robloxdotnet's UserGroupInfo.cs
+                            foreach (UserGroupData ugi in userGroupInfo.data) //Data is an object from Robloxdotnet's UserGroupInfo.cs
                             {
                                 if (data[i, 2] != String.Empty)
                                 {
@@ -110,7 +111,7 @@ namespace LoravianInternalAffairs.Commands
                         {
 
                             bool remove = true;
-                            foreach (Data ugi in userGroupInfo.data)
+                            foreach (UserGroupData ugi in userGroupInfo.data)
                             {
                                 if (data[i, 2] != String.Empty)
                                 {

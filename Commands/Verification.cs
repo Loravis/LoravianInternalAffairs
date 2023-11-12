@@ -7,6 +7,7 @@ using static CrypticWizard.RandomWordGenerator.WordGenerator;
 using Discord.Commands;
 using Discord.WebSocket;
 using Robloxdotnet.Exceptions;
+using Robloxdotnet.Utilities.Users;
 using Robloxdotnet;
 using System.Text.RegularExpressions;
 
@@ -60,9 +61,10 @@ namespace LoravianInternalAffairs.Commands
             switch (component.Data.CustomId)
             {
                 case "verification_phrase_done":
-                    string description = await Robloxdotnet.Roblox.GetUserDescription(robloxIdGlobal);
+                    UserInfo userInfo = await Robloxdotnet.Roblox.GetUserInfo(robloxIdGlobal);
+                    string descriptionString = userInfo.description;
 
-                    if (GetAlphabeticalLetters(description).Contains(GetAlphabeticalLetters(verificationPhrase)))
+                    if (GetAlphabeticalLetters(descriptionString).Contains(GetAlphabeticalLetters(verificationPhrase)))
                     {
                         try
                         {
