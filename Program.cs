@@ -56,6 +56,9 @@ namespace LoravianInternalAffairs
                     case "forceupdate":
                         await Commands.Getroles.UpdateUserRoles(client, command, loginData, true);
                         break;
+                    case "profile":
+                        await Commands.Profile.ViewProfile(client, command, loginData);
+                        break;
                 }
             } catch (Discord.Net.HttpException ex)
             {
@@ -87,6 +90,12 @@ namespace LoravianInternalAffairs
                 forceupdateCommand.WithDefaultMemberPermissions(GuildPermission.ManageRoles);
                 forceupdateCommand.AddOption("user", ApplicationCommandOptionType.User, "The user you are looking to update", isRequired: true);
                 applicationCommandProperties.Add(forceupdateCommand.Build());
+
+                var profileCommand = new SlashCommandBuilder();
+                profileCommand.WithName("profile");
+                profileCommand.WithDescription("Check someone's or your own profile.");
+                profileCommand.AddOption("user", ApplicationCommandOptionType.User, "The user you are looking to view the profile of. Leave empty to check yourself.", isRequired: false);
+                applicationCommandProperties.Add(profileCommand.Build());
 
                 var bindCommand = new SlashCommandBuilder();
                 bindCommand.WithName("bind");

@@ -5,11 +5,14 @@ CREATE TABLE IF NOT EXISTS verifications (
     discordid varchar(255)
 );
 
+DROP TABLE IF EXISTS statistics; 
+
 CREATE TABLE statistics (
+	robloxid varchar(255),
 	experience int,
 	resistance int,
     strength int, 
     intelligence int,
     agility int, 
-    charme int
+    charm int
 );
