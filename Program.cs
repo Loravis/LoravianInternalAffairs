@@ -59,6 +59,9 @@ namespace LoravianInternalAffairs
                     case "profile":
                         await Commands.Profile.ViewProfile(client, command, loginData);
                         break;
+                    case "managestats":
+                        await Commands.ManageStats.ManageStatsHandler(client, command, loginData);
+                        break;
                 }
             } catch (Discord.Net.HttpException ex)
             {
@@ -96,6 +99,21 @@ namespace LoravianInternalAffairs
                 profileCommand.WithDescription("Check someone's or your own profile.");
                 profileCommand.AddOption("user", ApplicationCommandOptionType.User, "The user you are looking to view the profile of. Leave empty to check yourself.", isRequired: false);
                 applicationCommandProperties.Add(profileCommand.Build());
+
+                var manageStatisticsCommand = new SlashCommandBuilder();
+                manageStatisticsCommand.WithName("managestats");
+                manageStatisticsCommand.WithDescription("Manage a member's user statistics. Should only be used in emergencies.");
+                manageStatisticsCommand.WithDefaultMemberPermissions(GuildPermission.Administrator);
+
+                var addOption = new SlashCommandOptionBuilder()
+                    .WithName("add")
+                    .WithDescription("Add stat points")
+                    .WithType(ApplicationCommandOptionType.SubCommand)
+                    .AddOption("user", ApplicationCommandOptionType.User, "The user you are looking to manage", isRequired: true)
+                    .AddOption("stat", ApplicationCommandOptionType.String, "The stat you wish to manage", isRequired: true)
+                    .AddOption("amount", ApplicationCommandOptionType.Integer, "The amount of stat points you want to add", isRequired: true);
+                manageStatisticsCommand.AddOption(addOption);
+                applicationCommandProperties.Add(manageStatisticsCommand.Build());
 
                 var bindCommand = new SlashCommandBuilder();
                 bindCommand.WithName("bind");

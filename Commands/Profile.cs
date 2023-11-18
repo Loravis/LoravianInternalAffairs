@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using MySql.Data.MySqlClient;
+using Robloxdotnet;
 
 namespace LoravianInternalAffairs.Commands
 {
@@ -52,10 +53,36 @@ namespace LoravianInternalAffairs.Commands
                     cmd = new MySqlCommand("INSERT INTO statistics (robloxid, experience, resistance, strength, intelligence, agility, charm) VALUES ('" + robloxuserresult + "', 0, 0, 0, 0, 0, 0);", con);
                     await cmd.ExecuteScalarAsync();
                 }
-                else
+
+                cmd.CommandText = "SELECT experience FROM statistics WHERE robloxid=" + robloxuserresult + ";";
+                var experience = await cmd.ExecuteScalarAsync();
+                cmd.CommandText = "SELECT resistance FROM statistics WHERE robloxid=" + robloxuserresult + ";";
+                var resistance = await cmd.ExecuteScalarAsync();
+                cmd.CommandText = "SELECT strength FROM statistics WHERE robloxid=" + robloxuserresult + ";";
+                var strength = await cmd.ExecuteScalarAsync();
+                cmd.CommandText = "SELECT intelligence FROM statistics WHERE robloxid=" + robloxuserresult + ";";
+                var intelligence = await cmd.ExecuteScalarAsync();
+                cmd.CommandText = "SELECT agility FROM statistics WHERE robloxid=" + robloxuserresult + ";";
+                var agility = await cmd.ExecuteScalarAsync();
+                cmd.CommandText = "SELECT charm FROM statistics WHERE robloxid=" + robloxuserresult + ";";
+                var charm = await cmd.ExecuteScalarAsync();
+
+                var robloxName = await Roblox.GetUsernameFromId(Convert.ToUInt64(robloxuserresult));
+                var robloxThumbnail = await Roblox.GetUserThumbnail(Convert.ToUInt64(robloxuserresult), "420x420", "Png", false, "avatar-headshot");
+
+                EmbedBuilder embed = new EmbedBuilder
                 {
-                    //TODO
-                }
+                    Title = robloxName + "'s profile",
+                    ThumbnailUrl = robloxThumbnail,
+                    Color = Color.DarkMagenta,
+                    Description = "This is the requested user's profile that applies to all Loravia associated groups. " +
+                    "User statistics change based on activities within the community and games."
+                };
+
+                embed.AddField("User statistics", ":star: Experience: " + experience + "\n:shield: Resistance: " + resistance + "\n:muscle: Strength: " + strength + 
+                    "\n:bulb: Intelligence: " + intelligence + "\n:arrow_right: Agility: " + agility + "\n:revolving_hearts: Charm: " + charm);
+
+                await command.RespondAsync(embed: embed.Build(), ephemeral: true);
             }
         }
     }
